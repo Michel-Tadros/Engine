@@ -29,10 +29,11 @@ bool D3D12Module::init()
     if (FAILED(hr))
         return false;
 
-    // Select the first adapter ranked for high-performance graphics.
+    //My NVIDIA graphic card does not support DirectX feature_level_12_0 but the intel integrated one does.
+    //Replace DXGI_GPU_PREFERENCE_MINIMUM_POWER with DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE 
     hr = factory->EnumAdapterByGpuPreference(
         0,
-        DXGI_GPU_PREFERENCE_MINIMUM_POWER,//My NVIDIA graphic card does not support DirectX feature 12_0 but the intel integrated one does.
+        DXGI_GPU_PREFERENCE_MINIMUM_POWER,
         IID_PPV_ARGS(&adapter));
 
     if (FAILED(hr))
