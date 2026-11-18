@@ -1,10 +1,13 @@
 #include "Globals.h"
 #include "Application.h"
 #include "ModuleInput.h"
+#include "D3D12Module.h"
 
 
 Application::Application(int argc, wchar_t** argv, void* hWnd)
 {
+    d3d12Module = new D3D12Module();
+    modules.push_back(d3d12Module);
     modules.push_back(new ModuleInput((HWND)hWnd));
 }
 

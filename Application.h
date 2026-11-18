@@ -7,6 +7,7 @@
 #include <chrono>
 
 class Module;
+class D3D12Module;
 
 class Application
 {
@@ -26,6 +27,7 @@ public:
 
     bool                        isPaused() const { return paused; }
     bool                        setPaused(bool p) { paused = p; return paused; }
+    D3D12Module*                getD3D12Module() const { return d3d12Module; }
 
 private:
     enum { MAX_FPS_TICKS = 30 };
@@ -39,6 +41,7 @@ private:
     uint64_t  tickSum = 0;
     uint64_t  elapsedMilis = 0;
     bool      paused = false;
+    D3D12Module* d3d12Module = nullptr;
 };
 
 extern Application* app;
