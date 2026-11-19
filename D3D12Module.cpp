@@ -491,18 +491,16 @@ bool D3D12Module::renderFrame(const FLOAT clearColor[4])
         return false;
 
     // 8. Signal the fence for this back buffer.
-    const UINT64 nextFenceValue = fenceValues[frameIndex] + 1;
+    const UINT64 signalValue = nextFenceValue++;
 
     hr = commandQueue->Signal(
         fence.Get(),
-        nextFenceValue);
+        signalValue);
 
     if (FAILED(hr))
         return false;
 
-    fenceValues[frameIndex] = nextFenceValue;
-
-    return true;
+    fenceValues[frameIndex] = signalValue;
 }
 
 void D3D12Module::render()

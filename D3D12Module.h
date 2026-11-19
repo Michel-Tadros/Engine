@@ -15,6 +15,7 @@ public:
 
     ComPtr<ID3D12Fence> fence;
     UINT64 fenceValues[FRAME_COUNT] = {};
+    UINT64 nextFenceValue = 1;
 
     HANDLE fenceEvent = nullptr;
     explicit D3D12Module(HWND hWnd);
