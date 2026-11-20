@@ -158,6 +158,8 @@ bool Exercise2::createPipelineState()
 
     psoDesc.DepthStencilState =
         CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+    psoDesc.DepthStencilState.DepthEnable = FALSE;
+    psoDesc.DepthStencilState.StencilEnable = FALSE;
 
     HRESULT hr = d3d12->getDevice()->CreateGraphicsPipelineState(
         &psoDesc,
