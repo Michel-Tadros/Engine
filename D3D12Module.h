@@ -29,6 +29,7 @@ public:
     bool recordClearCommand(const FLOAT clearColor[4]);
     bool renderFrame(const FLOAT clearColor[4]);
     void render() override;
+    bool Flush();
 
     ID3D12Device5* getDevice() const noexcept
     {
@@ -54,6 +55,16 @@ public:
     UINT getCurrentBackBufferIndex() const
     {
         return currentBackBufferIndex;
+    }
+
+    ID3D12CommandAllocator* getCommandAllocator(UINT index) const
+    {
+        return commandAllocators[index].Get();
+    }
+
+    ID3D12GraphicsCommandList* getCommandList() const
+    {
+        return commandList.Get();
     }
 
 private:

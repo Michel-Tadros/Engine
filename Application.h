@@ -8,6 +8,7 @@
 
 class Module;
 class D3D12Module;
+class ModuleResources;
 
 class Application
 {
@@ -28,6 +29,7 @@ public:
     bool                        isPaused() const { return paused; }
     bool                        setPaused(bool p) { paused = p; return paused; }
     D3D12Module*                getD3D12Module() const { return d3d12Module; }
+    ModuleResources*            getResourcesModule() const { return resourcesModule; }
 
 private:
     enum { MAX_FPS_TICKS = 30 };
@@ -42,6 +44,7 @@ private:
     uint64_t  elapsedMilis = 0;
     bool      paused = false;
     D3D12Module* d3d12Module = nullptr;
+    ModuleResources* resourcesModule = nullptr;
 };
 
 extern Application* app;

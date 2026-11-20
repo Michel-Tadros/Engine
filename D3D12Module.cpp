@@ -69,12 +69,11 @@ bool D3D12Module::init()
     if (FAILED(infoQueue->SetBreakOnSeverity(
             D3D12_MESSAGE_SEVERITY_WARNING, TRUE)))
         return false;
-    
+#endif
     if (!createSwapChainAndRTVs())
         return false;
     if (!createCommandObjects())
         return false;
-#endif
     return true;
 }
 
@@ -514,4 +513,29 @@ void D3D12Module::render()
     {
         // Handle rendering failure.
     }
+}
+
+bool D3D12Module::Flush()
+{
+    const UINT64 fenceValue = nextFenceValue++;
+
+    HRESULT hr = commandQueue->Signal(
+        fence.Get(),
+        fenceValue);
+
+    if (FAILED(hr))
+        return false;
+
+    hr = fence->SetEventOnCompletion(
+        fenceValue,
+        fenceEvent);
+
+    if (FAILED(hr))
+        return false;
+
+    DWORD result = WaitForSingleObject(
+        fenceEvent,
+        INFINITE);
+
+    return result == WAIT_OBJECT_0;
 }

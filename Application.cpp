@@ -2,15 +2,16 @@
 #include "Application.h"
 #include "ModuleInput.h"
 #include "D3D12Module.h"
+#include "ModuleResources.h"
 
 
 Application::Application(int argc, wchar_t** argv, void* hWnd)
 {
-    modules.push_back(new ModuleInput((HWND)hWnd));
-
     d3d12Module = new D3D12Module((HWND)hWnd);
     modules.push_back(d3d12Module);
-
+    resourcesModule = new ModuleResources(d3d12Module);
+    modules.push_back(resourcesModule);
+    modules.push_back(new ModuleInput((HWND)hWnd));
 }
 
 Application::~Application()
