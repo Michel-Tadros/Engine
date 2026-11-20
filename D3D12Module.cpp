@@ -504,15 +504,16 @@ bool D3D12Module::renderFrame(const FLOAT clearColor[4])
 
 void D3D12Module::render()
 {
-    const FLOAT clearColor[] =
-    {
-         1.0f, 0.0f, 0.0f, 1.0f
-    };
+    //Rendering for exercise 2 is different.
+    //const FLOAT clearColor[] =
+    //{
+    //     1.0f, 0.0f, 0.0f, 1.0f
+    //};
 
-    if (!renderFrame(clearColor))
-    {
-        // Handle rendering failure.
-    }
+    //if (!renderFrame(clearColor))
+    //{
+    //    // Handle rendering failure.
+    //}
 }
 
 bool D3D12Module::Flush()
@@ -538,4 +539,13 @@ bool D3D12Module::Flush()
         INFINITE);
 
     return result == WAIT_OBJECT_0;
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE D3D12Module::getRTV(UINT index) const
+{
+    D3D12_CPU_DESCRIPTOR_HANDLE handle =
+        rtvHeap->GetCPUDescriptorHandleForHeapStart();
+
+    handle.ptr += static_cast<SIZE_T>(index) * rtvDescriptorSize;
+    return handle;
 }

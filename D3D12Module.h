@@ -30,6 +30,7 @@ public:
     bool renderFrame(const FLOAT clearColor[4]);
     void render() override;
     bool Flush();
+    D3D12_CPU_DESCRIPTOR_HANDLE getRTV(UINT index) const;
 
     ID3D12Device5* getDevice() const noexcept
     {
@@ -65,6 +66,10 @@ public:
     ID3D12GraphicsCommandList* getCommandList() const
     {
         return commandList.Get();
+    }
+    ID3D12Resource* getBackBuffer(UINT index) const
+    {
+        return backBuffers[index].Get();
     }
 
 private:

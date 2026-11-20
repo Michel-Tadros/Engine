@@ -3,7 +3,7 @@
 #include "ModuleInput.h"
 #include "D3D12Module.h"
 #include "ModuleResources.h"
-
+#include "Exercise2.h"
 
 Application::Application(int argc, wchar_t** argv, void* hWnd)
 {
@@ -11,6 +11,7 @@ Application::Application(int argc, wchar_t** argv, void* hWnd)
     modules.push_back(d3d12Module);
     resourcesModule = new ModuleResources(d3d12Module);
     modules.push_back(resourcesModule);
+    modules.push_back(new Exercise2(d3d12Module,resourcesModule));
     modules.push_back(new ModuleInput((HWND)hWnd));
 }
 
