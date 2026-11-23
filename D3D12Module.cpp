@@ -74,6 +74,8 @@ bool D3D12Module::init()
         return false;
     if (!createCommandObjects())
         return false;
+    if (!createDepthStencilBuffer())
+        return false;
     return true;
 }
 
@@ -548,4 +550,70 @@ D3D12_CPU_DESCRIPTOR_HANDLE D3D12Module::getRTV(UINT index) const
 
     handle.ptr += static_cast<SIZE_T>(index) * rtvDescriptorSize;
     return handle;
+}
+
+bool D3D12Module::createDepthStencilBuffer()
+{
+    DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
+
+    if (FAILED(swapChain->GetDesc1(&swapChainDesc)))
+        return false;
+
+    CD3DX12_HEAP_PROPERTIES heapProps(
+        D3D12_HEAP_TYPE_DEFAULT
+    );
+
+    CD3DX12_RESOURCE_DESC desc =
+        CD3DX12_RESOURCE_DESC::Tex2D(
+            DXGI_FORMAT_D32_FLOAT,
+            swapChainDesc.Width,
+            swapChainDesc.Height,
+            1,
+            1,
+            1,
+            0,
+            D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL
+        );
+
+    D3D12_CLEAR_VALUE clearValue = {};
+    clearValue.Format = DXGI_FORMAT_D32_FLOAT;
+    clearValue.DepthStencil.Depth = 1.0f;
+    clearValue.DepthStencil.Stencil = 0;
+
+    HRESULT hr = device->CreateCommittedResource(
+        &heapProps,
+        D3D12_HEAP_FLAG_NONE,
+        &desc,
+        D3D12_RESOURCE_STATE_DEPTH_WRITE,
+        &clearValue,
+        IID_PPV_ARGS(&depthStencilBuffer)
+    );
+
+    if (FAILED(hr))
+        return false;
+
+    D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
+    heapDesc.NumDescriptors = 1;
+    heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+    heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+
+    hr = device->CreateDescriptorHeap(
+        &heapDesc,
+        IID_PPV_ARGS(&dsvHeap)
+    );
+
+    if (FAILED(hr))
+        return false;
+
+    device->CreateDepthStencilView(
+        depthStencilBuffer.Get(),
+        nullptr,
+        dsvHeap->GetCPUDescriptorHandleForHeapStart()
+    );
+
+    return true;
+}
+D3D12_CPU_DESCRIPTOR_HANDLE D3D12Module::getDSV() const
+{
+    return dsvHeap->GetCPUDescriptorHandleForHeapStart();
 }

@@ -27,6 +27,11 @@ bool Exercise2::init()
 
     if (!createPipelineState())
         return false;
+    
+    debugDraw = new DebugDrawPass(
+        d3d12->getDevice(),
+        d3d12->getCommandQueue()
+    );
 
     return true;
 }
@@ -57,11 +62,18 @@ bool Exercise2::createVertexBuffer()
 
 bool Exercise2::createRootSignature()
 {
-    CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
+    CD3DX12_ROOT_PARAMETER rootParameters[1];
+
+    rootParameters[0].InitAsConstants(
+        static_cast<UINT>(sizeof(Matrix) / sizeof(UINT32)),
+        0
+    );
+
+    CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
 
     rootSignatureDesc.Init(
-        0,
-        nullptr,
+        1,
+        rootParameters,
         0,
         nullptr,
         D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
@@ -165,7 +177,9 @@ bool Exercise2::createPipelineState()
         &psoDesc,
         IID_PPV_ARGS(&pipelineState)
     );
-
+    psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+    psoDesc.DepthStencilState =
+        CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
     return SUCCEEDED(hr);
 }
 
@@ -217,11 +231,12 @@ bool Exercise2::renderFrame()
     commandList->ResourceBarrier(1, &barrierToRT);
 
     // Set and clear the render target.
+    D3D12_CPU_DESCRIPTOR_HANDLE dsv = d3d12->getDSV();
     commandList->OMSetRenderTargets(
         1,
         &rtv,
         FALSE,
-        nullptr
+        &dsv
     );
 
     const FLOAT clearColor[] =
@@ -236,19 +251,19 @@ bool Exercise2::renderFrame()
         nullptr
     );
 
+    commandList->ClearDepthStencilView(
+        dsv,
+        D3D12_CLEAR_FLAG_DEPTH,
+        1.0f,
+        0,
+        0,
+        nullptr
+    );
+
     // Set the root signature.
     commandList->SetGraphicsRootSignature(
         rootSignature.Get()
     );
-
-    // Set the vertex buffer.
-    commandList->IASetVertexBuffers(
-        0,
-        1,
-        &vertexBufferView
-    );
-
-    // Get the swap-chain dimensions.
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
 
     hr = swapChain->GetDesc1(&swapChainDesc);
@@ -261,6 +276,50 @@ bool Exercise2::renderFrame()
 
     const FLOAT height =
         static_cast<FLOAT>(swapChainDesc.Height);
+    if (height <= 0.0f)
+        return false;
+
+    // Model matrix.
+    Matrix model = Matrix::Identity;
+
+    // View matrix.
+    Matrix view = Matrix::CreateLookAt(
+        Vector3(0.0f, 10.0f, 10.0f),
+        Vector3::Zero,
+        Vector3::Up
+    );
+
+    // Projection matrix.
+    const float aspect = width / height;
+    const float fov = XM_PIDIV4;
+
+    Matrix proj = Matrix::CreatePerspectiveFieldOfView(
+        fov,
+        aspect,
+        0.1f,
+        1000.0f
+    );
+
+    // Compose and transpose the MVP matrix.
+    Matrix mvp = (model * view * proj).Transpose();
+
+    // Upload the 16 DWORDs to root parameter 0.
+    commandList->SetGraphicsRoot32BitConstants(
+        0,
+        static_cast<UINT>(sizeof(Matrix) / sizeof(UINT32)),
+        &mvp,
+        0
+    );
+
+    // Set the vertex buffer.
+    commandList->IASetVertexBuffers(
+        0,
+        1,
+        &vertexBufferView
+    );
+
+    // Get the swap-chain dimensions.
+    
 
     D3D12_VIEWPORT viewport =
     {
@@ -334,6 +393,25 @@ bool Exercise2::renderFrame()
 
     d3d12->fenceValues[frameIndex] = fenceValue;
 
+    dd::xzSquareGrid(
+        -10.0f, 10.0f, 0.0f, 1.0f,
+        dd::colors::LightGray
+    );
+
+    dd::axisTriad(
+        ddConvert(Matrix::Identity),
+        0.1f,
+        1.0f
+    );
+
+    debugDraw->record(
+        commandList,
+        static_cast<uint32_t>(width),
+        static_cast<uint32_t>(height),
+        view,
+        proj
+    );
+
     return true;
 }
 
@@ -353,6 +431,8 @@ bool Exercise2::cleanUp()
     pipelineState.Reset();
     rootSignature.Reset();
     vertexBuffer.Reset();
+    delete debugDraw;
+    debugDraw = nullptr;
 
     return true;
 }

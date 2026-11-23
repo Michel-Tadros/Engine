@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Module.h"
+#include "DebugDrawPass.h"
 
 class D3D12Module;
 class ModuleResources;
@@ -27,6 +28,7 @@ private:
 
     D3D12Module* d3d12 = nullptr;
     ModuleResources* resources = nullptr;
+    DebugDrawPass* debugDraw = nullptr;
 
     Vertex vertices[3] =
     {

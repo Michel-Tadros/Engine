@@ -31,6 +31,8 @@ public:
     void render() override;
     bool Flush();
     D3D12_CPU_DESCRIPTOR_HANDLE getRTV(UINT index) const;
+    D3D12_CPU_DESCRIPTOR_HANDLE getDSV() const;
+    bool createDepthStencilBuffer();
 
     ID3D12Device5* getDevice() const noexcept
     {
@@ -87,4 +89,6 @@ private:
     std::array<ComPtr<ID3D12Resource>, FRAME_COUNT> backBuffers;
     UINT rtvDescriptorSize = 0;
     UINT currentBackBufferIndex = 0;
+    ComPtr<ID3D12Resource> depthStencilBuffer;
+    ComPtr<ID3D12DescriptorHeap> dsvHeap;
 };
