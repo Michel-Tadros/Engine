@@ -349,13 +349,14 @@ bool Exercise2::renderFrame()
 
     // Draw the three vertices.
     commandList->DrawInstanced(3, 1, 0, 0);
+    dd::xzSquareGrid(-10.0f, 10.0f, 0.0f, 1.0f,dd::colors::LightGray);
+
+    dd::axisTriad(ddConvert(Matrix::Identity),0.1f,1.0f);
+
+    debugDraw->record(commandList,static_cast<uint32_t>(width),static_cast<uint32_t>(height),view,proj);
 
     // RENDER_TARGET -> PRESENT
-    auto barrierToPresent = CD3DX12_RESOURCE_BARRIER::Transition(
-        backBuffer,
-        D3D12_RESOURCE_STATE_RENDER_TARGET,
-        D3D12_RESOURCE_STATE_PRESENT
-    );
+    auto barrierToPresent = CD3DX12_RESOURCE_BARRIER::Transition(backBuffer,D3D12_RESOURCE_STATE_RENDER_TARGET,D3D12_RESOURCE_STATE_PRESENT);
 
     commandList->ResourceBarrier(1, &barrierToPresent);
 
@@ -392,26 +393,6 @@ bool Exercise2::renderFrame()
         return false;
 
     d3d12->fenceValues[frameIndex] = fenceValue;
-
-    dd::xzSquareGrid(
-        -10.0f, 10.0f, 0.0f, 1.0f,
-        dd::colors::LightGray
-    );
-
-    dd::axisTriad(
-        ddConvert(Matrix::Identity),
-        0.1f,
-        1.0f
-    );
-
-    debugDraw->record(
-        commandList,
-        static_cast<uint32_t>(width),
-        static_cast<uint32_t>(height),
-        view,
-        proj
-    );
-
     return true;
 }
 
